@@ -1,12 +1,24 @@
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
-const Joi = require('joi');
+const {campgroundSchema} = require('./schemas');
 const asyncErrorHandler = require('./utils/asyncErrorHandler');
 const ExpressError = require('./utils/ExpressError');
 const ejsMate = require('ejs-mate');
 const Campground = require('./models/campground')
 const methodOverride = require('method-override');
+
+//Validation of input with Joi
+const validateCampground =(req,res,next)=>{
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        const msg = error.details.map(ele => ele.message).join(',')
+        throw new ExpressError(msg, 400)
+    }else{
+        next();
+    }
+
+}
 
 //Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/yelp_camp', {
@@ -39,8 +51,9 @@ app.get('/campgrounds/new', (req, res) => {
 })
 
 //Process Campgrounds creation form
-app.post('/campgrounds', asyncErrorHandler(async (req, res) => {
-    if (!req.body.campground) throw new ExpressError('Invalid campground data', 400)
+app.post('/campgrounds',validateCampground, asyncErrorHandler(async (req, res) => {
+    // if (!req.body.campground) throw new ExpressError('Invalid campground data', 400)
+    
     const campground = await new Campground(req.body.campground)
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`)
@@ -62,7 +75,7 @@ app.get('/campgrounds/:id/edit', asyncErrorHandler(async (req, res) => {
 }))
 
 //Update a campgrounds by ID
-app.put('/campgrounds/:id', asyncErrorHandler(async (req, res) => {
+app.put('/campgrounds/:id',validateCampground, asyncErrorHandler(async (req, res) => {
     const { id } = req.params
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground })
     res.redirect(`/campgrounds/${campground._id}`)
