@@ -77,7 +77,7 @@ app.post('/campgrounds', validateCampground, asyncErrorHandler(async (req, res) 
 app.get('/campgrounds/:id', asyncErrorHandler(async (req, res) => {
     const { id } = req.params
     const campground = await Campground.findById(id)
-        .populate('Reviews')
+        .populate('reviews')
     res.render('campgrounds/show', { campground })
 }))
 
