@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const flash = require('connect-flash')
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const methodOverride = require('method-override');
@@ -21,6 +22,7 @@ db.once('open', () => {
 })
 
 //Middleware 
+app.use(flash())
 app.use(express.static(path.join(__dirname, 'public')))
 app.engine('ejs', ejsMate);
 app.use(methodOverride('_method'));
@@ -37,6 +39,15 @@ app.use(session({
         expires: Date().now + 1000 * 60 * 60 * 24 * 7
     }
 }))
+
+//Using flash middleware
+app.use((req, res, next) => {
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error')
+    next()
+})
+
+
 //Use router middleWare
 app.use('/campgrounds', campgrounds)
 app.use('/campgrounds/:id/reviews', reviews)

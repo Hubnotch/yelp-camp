@@ -11,7 +11,7 @@ const Review = require('../models/review')
 
 //Validation of input with Joi
 const validateCampground = (req, res, next) => {
-    const { error } = campgroundSchema.validate(req.body);
+    const { error } = campgroundSchema.validate(req.body.campground);
     if (error) {
         const msg = error.details.map(ele => ele.message).join(',')
         throw new ExpressError(msg, 400)
@@ -38,6 +38,7 @@ router.post('/', validateCampground, asyncErrorHandler(async (req, res) => {
 
     const campground = await new Campground(req.body.campground)
     await campground.save();
+    req.flash('success','Created Campground successfully')
     res.redirect(`/campgrounds/${campground._id}`)
 }))
 
@@ -47,6 +48,10 @@ router.get('/:id', asyncErrorHandler(async (req, res) => {
     const { id } = req.params
     const campground = await Campground.findById(id)
         .populate('reviews')
+        if(!campground){
+            req.flash('success','Cannot find campground')
+            res.redirect('/campgrounds')
+        }
     res.render('campgrounds/show', { campground })
 }))
 
@@ -54,6 +59,10 @@ router.get('/:id', asyncErrorHandler(async (req, res) => {
 router.get('/:id/edit', asyncErrorHandler(async (req, res) => {
     const { id } = req.params
     const campground = await Campground.findById(id)
+    if(!campground){
+        req.flash('success','Cannot find campground')
+        res.redirect('/campgrounds')
+    }
     res.render('campgrounds/edit', { campground })
 }))
 
@@ -61,6 +70,11 @@ router.get('/:id/edit', asyncErrorHandler(async (req, res) => {
 router.put('/:id', validateCampground, asyncErrorHandler(async (req, res) => {
     const { id } = req.params
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground })
+    req.flash('success','Successfully updated Campground')
+    if(!campground){
+        req.flash('success','Cannot find campground')
+        res.redirect('/campgrounds')
+    }
     res.redirect(`/campgrounds/${campground._id}`)
 }))
 
@@ -68,6 +82,8 @@ router.put('/:id', validateCampground, asyncErrorHandler(async (req, res) => {
 router.delete('/:id', asyncErrorHandler(async (req, res) => {
     const { id } = req.params
     await Campground.findByIdAndDelete(id)
+    req.flash('success','Deleted Campground successfully')
+
     res.redirect('/campgrounds')
 }))
 

@@ -31,6 +31,8 @@ router.post('/', validateReview, asyncErrorHandler(async (req, res) => {
     campground.reviews.push(review)
     await campground.save()
     await review.save()
+    req.flash('success', 'Created reviews successfully')
+
     res.redirect(`/campgrounds/${campground._id}`)
 }))
 
@@ -40,14 +42,10 @@ router.delete('/:reviewId', asyncErrorHandler(async (req, res) => {
     const { id, reviewId } = req.params
     await Campground.findByIdAndUpdate(id, { $pull: { review: reviewId } })
     await Review.findByIdAndDelete(reviewId);
+    req.flash('success', 'Deleted reviews successfully')
+
     res.redirect(`/campgrounds/${id}`)
 }))
-
-
-
-
-
-
 
 
 module.exports = router
