@@ -16,7 +16,6 @@ router.post('/register', asyncErrorHandler(async (req, res) => {
         const { email, username, password } = req.body
         const user = new User({ email, username })
         const newUser = await User.register(user, password)
-        console.log(newUser)
         req.flash('success', 'Welcome to Yelp camp')
         res.redirect('/campgrounds')
     } catch (error) {
@@ -31,11 +30,16 @@ router.get('/login', (req, res) => {
 })
 
 //Handle user logging in
-router.post('/login', passport.authenticate('local',{failureFlash:true, failureRedirect:'/login'}), (req, res) => {
+router.post('/login', passport.authenticate('local', { failureFlash: true, failureRedirect: '/login' }), (req, res) => {
     req.flash('success', 'Welcome back')
     res.redirect('/campgrounds')
 })
 
-
+//logout function using passport
+router.get('/logout', (req, res) => {
+    req.logout();
+    req.flash('success', 'Goodbye')
+    res.redirect('/campgrounds')
+})
 
 module.exports = router

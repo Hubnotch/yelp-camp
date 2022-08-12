@@ -12,7 +12,7 @@ const User = require('./models/user')
 const app = express();
 
 //ROUTERS
-const campgroundRoutes = require('./routes/camground')
+const campgroundRoutes = require('./routes/campground')
 const reviewRoutes = require('./routes/review')
 const userRoutes = require('./routes/users')
 
@@ -65,11 +65,11 @@ app.use((req, res, next) => {
 })
 
 //Testing passport function 
-app.get('/fakeuser',async(req,res)=>{
-    const user = new User({email:'love2ekene@gmail.com',username:'Hubnotch'})
-    const newUser = await User.register(user,'hubnotch')
-    res.send(newUser)
-})
+// app.get('/fakeuser', async (req, res) => {
+//     const user = new User({ email: 'love2ekene@gmail.com', username: 'Hubnotch' })
+//     const newUser = await User.register(user, 'hubnotch')
+//     res.send(newUser)
+// })
 
 //Use router middleWare
 app.use('/campgrounds', campgroundRoutes)
