@@ -12,7 +12,7 @@ const User = require('./models/user')
 const app = express();
 
 //ROUTERS
-const campgroundRoutes = require('./routes/campground')
+const campgroundRoutes = require('./routes/campgrounds')
 const reviewRoutes = require('./routes/review')
 const userRoutes = require('./routes/users')
 
@@ -59,6 +59,7 @@ passport.deserializeUser(User.deserializeUser())
 
 //Using flash middleware
 app.use((req, res, next) => {
+    res.local.currentUser = req.user
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error')
     next()

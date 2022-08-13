@@ -11,18 +11,25 @@ router.get('/register', (req, res) => {
 })
 
 //Handle registration form
-router.post('/register', asyncErrorHandler(async (req, res) => {
+router.post('/register', async (req, res, next) => {
     try {
         const { email, username, password } = req.body
         const user = new User({ email, username })
         const newUser = await User.register(user, password)
-        req.flash('success', 'Welcome to Yelp camp')
-        res.redirect('/campgrounds')
+        req.login(newUser, error => {
+            if (error) {
+                return next(error)
+            } else {
+                req.flash('success', 'Welcome to Yelp camp')
+                res.redirect('/campgrounds')
+            }
+        })
+
     } catch (error) {
         req.flash('error', error.message)
         res.redirect('/register')
     }
-}))
+})
 
 //Render login page
 router.get('/login', (req, res) => {
@@ -31,8 +38,10 @@ router.get('/login', (req, res) => {
 
 //Handle user logging in
 router.post('/login', passport.authenticate('local', { failureFlash: true, failureRedirect: '/login' }), (req, res) => {
-    req.flash('success', 'Welcome back')
-    res.redirect('/campgrounds')
+    req.flash('success', 'Welcome back');
+    const redirectUrl = req.session.returnTo || '/campgrounds';
+    delete req.session.returnTo;
+    res.redirect(redirectUrl)
 })
 
 //logout function using passport
