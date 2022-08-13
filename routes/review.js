@@ -8,26 +8,14 @@ const Campground = require('../models/campground')
 const methodOverride = require('method-override');
 const Review = require('../models/review')
 const app = express();
-
-
-
-
-//Validate Review with Joi
-const validateReview = (req, res, next) => {
-    const { error } = reviewSchema.validate(req.body);
-    if (error) {
-        const msg = error.details.map(ele => ele.message).join(',')
-        throw new ExpressError(msg, 400)
-    } else {
-        next();
-    }
-}
+const { validateReview, isLoggedin, isReviewAuthor } = require('../authMiddleware')
 
 
 //Reviews Route
-router.post('/', validateReview, asyncErrorHandler(async (req, res) => {
+router.post('/', validateReview, isLoggedin, asyncErrorHandler(async (req, res) => {
     const campground = await Campground.findById(req.params.id)
     const review = new Review(req.body.review)
+    review.author = req.user._id
     campground.reviews.push(review)
     await campground.save()
     await review.save()
@@ -38,7 +26,7 @@ router.post('/', validateReview, asyncErrorHandler(async (req, res) => {
 
 
 //Delete review Route
-router.delete('/:reviewId', asyncErrorHandler(async (req, res) => {
+router.delete('/:reviewId', isLoggedin, isReviewAuthor, asyncErrorHandler(async (req, res) => {
     const { id, reviewId } = req.params
     await Campground.findByIdAndUpdate(id, { $pull: { review: reviewId } })
     await Review.findByIdAndDelete(reviewId);
