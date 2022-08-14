@@ -28,7 +28,6 @@ db.once('open', () => {
 })
 
 //Middleware 
-app.use(flash())
 app.use(express.static(path.join(__dirname, 'public')))
 app.engine('ejs', ejsMate);
 app.use(methodOverride('_method'));
@@ -47,6 +46,7 @@ app.use(session({
         expires: Date().now + 1000 * 60 * 60 * 24 * 7
     }
 }))
+app.use(flash())
 
 //Initialize and use passport
 app.use(passport.initialize())
@@ -59,7 +59,7 @@ passport.deserializeUser(User.deserializeUser())
 
 //Using flash middleware
 app.use((req, res, next) => {
-    res.local.currentUser = req.user
+    res.locals.currentUser = req.user
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error')
     next()

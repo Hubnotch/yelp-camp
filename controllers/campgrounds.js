@@ -1,5 +1,7 @@
 const Campground = require('../models/campground')
-
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding')
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geoCoder = mbxGeocoding({ accessToken: mapBoxToken })
 
 
 //controllers for campground
@@ -13,7 +15,12 @@ module.exports.renderNewForm = (req, res) => {
 }
 
 module.exports.createCampground = async (req, res) => {
+    const geoData = await geoCoder.forwardGeocode({
+        query: req.body.campground.location,
+        limit: 1
+    }).send()
     const campground = await new Campground(req.body.campground)
+    campground.geometry = geoData.body.features[0].geometry
     campground.author = req.user._id
     await campground.save();
     req.flash('success', 'Created Campground successfully')
@@ -62,9 +69,4 @@ module.exports.deleteCampground = async (req, res) => {
     req.flash('success', 'Deleted Campground successfully')
     res.redirect('/campgrounds')
 }
-// module.exports.
-// module.exports.
-// module.exports.
-// module.exports.
-
 
